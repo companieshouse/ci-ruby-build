@@ -1,6 +1,6 @@
 FROM centos:8.1.1911
 
-ARG ruby_version=2.7.0
+ARG ruby_version=2.7.1
 
 RUN yum update -y && \
     yum install -y \
