@@ -1,6 +1,9 @@
-FROM centos:8.1.1911
+FROM amazonlinux:2
 
-ARG ruby_version=2.7.1
+ARG ruby_major_version=2
+ARG ruby_minor_version=7
+ARG ruby_patch_version=1
+ARG ruby_version=${ruby_major_version}.${ruby_minor_version}.${ruby_patch_version}
 
 RUN yum update -y && \
     yum install -y \
@@ -9,16 +12,18 @@ RUN yum update -y && \
     bzip2 \
     epel-release \
     gcc-c++ \
-    openssl-devel
+    openssl-devel \
+    wget \
+    unzip && \
+    yum clean all
 
-RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-RUN echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-RUN echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+RUN mkdir /tmp/ruby-source
+RUN wget https://cache.ruby-lang.org/pub/ruby/${ruby_major_version}.${ruby_minor_version}/ruby-${ruby_version}.zip -P /tmp/ruby-source
+RUN unzip /tmp/ruby-source/ruby-${ruby_version}.zip -d /tmp/ruby-source
+RUN ./tmp/ruby-source/ruby-${ruby_version}/configure
+RUN make
+RUN make install
+RUN rm /tmp/ruby-source -fr
 
-RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
-RUN echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
-
-RUN /bin/bash -l -c "rbenv install ${ruby_version}"
-RUN /bin/bash -l -c "rbenv global ${ruby_version}"
 RUN /bin/bash -l -c "gem install bundler"
 RUN /bin/bash -l -c "gem install middleman"
